@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  omni-infra-provider-kubevirt:
+    volumes:
+      - state:/_out/state
+    container_name: omni-infra-provider-kubevirt
+    restart: on-failure
+    cap_add:
+      - NET_ADMIN
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+      args:
+        - ARTIFACTS=${ARTIFACTS:?error}
+        - SHA=${SHA:?error}
+        - TAG=${TAG:?error}
+        - USERNAME=${USERNAME:?error}
+        - REGISTRY=${REGISTRY:?error}
+        - NODE_BUILD_ARGS=${NODE_BUILD_ARGS}
+        - TOOLCHAIN=${TOOLCHAIN:?error}
+        - CGO_ENABLED=${CGO_ENABLED:?error}
+        - GO_BUILDFLAGS=${GO_BUILDFLAGS}
+        - GOLANGCILINT_VERSION=${GOLANGCILINT_VERSION:?error}
+        - GOFUMPT_VERSION=${GOFUMPT_VERSION:?error}
+        - GOIMPORTS_VERSION=${GOIMPORTS_VERSION:?error}
+        - PROTOBUF_GO_VERSION=${PROTOBUF_GO_VERSION:?error}
+        - GRPC_GO_VERSION=${GRPC_GO_VERSION:?error}
+        - GRPC_GATEWAY_VERSION=${GRPC_GATEWAY_VERSION:?error}
+        - VTPROTOBUF_VERSION=${VTPROTOBUF_VERSION:?error}
+        - DEEPCOPY_VERSION=${DEEPCOPY_VERSION:?error}
+        - TESTPKGS=${TESTPKGS:?error}
+        - GO_LDFLAGS=${GO_LDFLAGS}
+
+volumes:
+  state:

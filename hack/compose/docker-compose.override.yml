@@ -1,0 +1,5 @@
+services:
+  omni-infra-provider-kubevirt:
+    command: >-
+      args:
+        --omni-api-endpoint=https://localhost:8099

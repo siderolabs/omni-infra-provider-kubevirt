@@ -1,0 +1,15 @@
+syntax = "proto3";
+package emuspecs;
+
+option go_package = "github.com/siderolabs/omni-infra-provider-kubevirt/api/specs";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+// MachineSpec is stored in Omni in the infra provisioner state.
+message MachineSpec {
+  string uuid = 1;
+  string schematic = 2;
+  string talos_version = 3;
+  string volume_id = 4;
+}
