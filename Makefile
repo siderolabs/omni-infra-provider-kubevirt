@@ -1,6 +1,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED, PLEASE DO NOT EDIT.
 #
-# Generated on 2024-10-02T19:28:55Z by kres 34e72ac.
+# Generated on 2024-10-03T14:26:39Z by kres 34e72ac.
 
 # common variables
 
@@ -135,7 +135,7 @@ else
 GO_LDFLAGS += -s
 endif
 
-all: unit-tests omni-infra-provider-kubevirt image-omni-infra-provider-kubevirt docker-compose-up docker-compose-down lint
+all: unit-tests omni-infra-provider-kubevirt image-omni-infra-provider-kubevirt docker-compose-up docker-compose-down run-integration-test lint
 
 $(ARTIFACTS):  ## Creates artifacts directory.
 	@mkdir -p $(ARTIFACTS)
@@ -210,6 +210,9 @@ docker-compose-up:
 .PHONY: docker-compose-down
 docker-compose-down:
 	ARTIFACTS="$(ARTIFACTS)" SHA="$(SHA)" TAG="$(TAG)" USERNAME="$(USERNAME)" REGISTRY="$(REGISTRY)" PROTOBUF_TS_VERSION="$(PROTOBUF_TS_VERSION)" NODE_BUILD_ARGS="$(NODE_BUILD_ARGS)" TOOLCHAIN="$(TOOLCHAIN)" CGO_ENABLED="$(CGO_ENABLED)" GO_BUILDFLAGS="$(GO_BUILDFLAGS)" GOLANGCILINT_VERSION="$(GOLANGCILINT_VERSION)" GOFUMPT_VERSION="$(GOFUMPT_VERSION)" GOIMPORTS_VERSION="$(GOIMPORTS_VERSION)" PROTOBUF_GO_VERSION="$(PROTOBUF_GO_VERSION)" GRPC_GO_VERSION="$(GRPC_GO_VERSION)" GRPC_GATEWAY_VERSION="$(GRPC_GATEWAY_VERSION)" VTPROTOBUF_VERSION="$(VTPROTOBUF_VERSION)" DEEPCOPY_VERSION="$(DEEPCOPY_VERSION)" TESTPKGS="$(TESTPKGS)" COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 GO_LDFLAGS="$(GO_LDFLAGS)" docker compose -p talemu --file ./hack/compose/docker-compose.yml --file ./hack/compose/docker-compose.override.yml down --rmi local --remove-orphans --volumes=$(REMOVE_VOLUMES)
+
+run-integration-test: omni-infra-provider-kubevirt
+	@hack/test/integration.sh
 
 .PHONY: rekres
 rekres:

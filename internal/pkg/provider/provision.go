@@ -33,30 +33,46 @@ import (
 
 // Provisioner implements Talos emulator infra provider.
 type Provisioner struct {
-	k8sClient client.Client
-	namespace string
+	k8sClient  client.Client
+	namespace  string
+	volumeMode v1.PersistentVolumeMode
 }
 
 // NewProvisioner creates a new provisioner.
-func NewProvisioner(k8sClient client.Client, namespace string) *Provisioner {
+func NewProvisioner(k8sClient client.Client, namespace, volumeMode string) *Provisioner {
 	return &Provisioner{
-		k8sClient: k8sClient,
-		namespace: namespace,
+		k8sClient:  k8sClient,
+		namespace:  namespace,
+		volumeMode: v1.PersistentVolumeMode(volumeMode),
 	}
 }
 
 // ProvisionSteps implements infra.Provisioner.
 //
-//nolint:gocognit,gocyclo,cyclop
+//nolint:gocognit,gocyclo,cyclop,maintidx
 func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 	return []provision.Step[*resources.Machine]{
-		provision.NewStep("ensureVolume", func(ctx context.Context, logger *zap.Logger, pctx provision.Context[*resources.Machine]) error {
-			schematic, err := pctx.GenerateSchematicID(ctx, logger, provision.WithExtraKernelArgs("console=ttyS0,38400n8"))
+		provision.NewStep("validateRequest", func(_ context.Context, _ *zap.Logger, pctx provision.Context[*resources.Machine]) error {
+			if len(pctx.GetRequestID()) > 62 {
+				return fmt.Errorf("the machine request name can not be longer than 63 characters")
+			}
+
+			return nil
+		}),
+		provision.NewStep("createSchematic", func(ctx context.Context, logger *zap.Logger, pctx provision.Context[*resources.Machine]) error {
+			schematic, err := pctx.GenerateSchematicID(ctx, logger,
+				provision.WithExtraKernelArgs("console=ttyS0,38400n8"),
+				provision.WithoutConnectionParams(),
+			)
 			if err != nil {
 				return err
 			}
 
 			pctx.State.TypedSpec().Value.Schematic = schematic
+
+			return nil
+		}),
+		provision.NewStep("ensureVolume", func(ctx context.Context, _ *zap.Logger, pctx provision.Context[*resources.Machine]) error {
 			pctx.State.TypedSpec().Value.TalosVersion = pctx.GetTalosVersion()
 
 			url, err := url.Parse(constants.ImageFactoryBaseURL)
@@ -71,7 +87,11 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 				return err
 			}
 
-			url = url.JoinPath("image", schematic, pctx.GetTalosVersion(), fmt.Sprintf("metal-%s.raw", data.Architecture))
+			url = url.JoinPath("image",
+				pctx.State.TypedSpec().Value.Schematic,
+				pctx.GetTalosVersion(),
+				fmt.Sprintf("nocloud-%s.qcow2", data.Architecture),
+			)
 
 			hash := sha256.New()
 
@@ -91,7 +111,6 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 						},
 					},
 					PVC: &v1.PersistentVolumeClaimSpec{
-						VolumeMode: pointer.To(v1.PersistentVolumeBlock),
 						AccessModes: []v1.PersistentVolumeAccessMode{
 							v1.ReadWriteOnce,
 						},
@@ -103,6 +122,16 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 					},
 				},
 			}
+
+			if p.volumeMode != "" {
+				volume.Spec.PVC.VolumeMode = &p.volumeMode
+			}
+
+			if volume.Annotations == nil {
+				volume.Annotations = map[string]string{}
+			}
+
+			volume.Annotations["cdi.kubevirt.io/storage.bind.immediate.requested"] = "true"
 
 			vol := &cdiv1.DataVolume{}
 
@@ -211,33 +240,47 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 						},
 					},
 				},
-			}
-
-			vm.Spec.DataVolumeTemplates = []kvv1.DataVolumeTemplateSpec{
 				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: pctx.GetRequestID(),
-					},
-					Spec: cdiv1.DataVolumeSpec{
-						PVC: &v1.PersistentVolumeClaimSpec{
-							VolumeMode: pointer.To(v1.PersistentVolumeBlock),
-							AccessModes: []v1.PersistentVolumeAccessMode{
-								v1.ReadWriteOnce,
-							},
-							Resources: v1.VolumeResourceRequirements{
-								Requests: v1.ResourceList{
-									v1.ResourceStorage: resource.MustParse(fmt.Sprintf("%dGi", data.DiskSize)),
-								},
-							},
-						},
-						Source: &cdiv1.DataVolumeSource{
-							PVC: &cdiv1.DataVolumeSourcePVC{
-								Name:      pctx.State.TypedSpec().Value.VolumeId,
-								Namespace: p.namespace,
-							},
+					Name: "cloudinitdisk",
+					VolumeSource: kvv1.VolumeSource{
+						CloudInitNoCloud: &kvv1.CloudInitNoCloudSource{
+							UserData:    pctx.ConnectionParams.JoinConfig,
+							NetworkData: `version: 1`,
 						},
 					},
 				},
+			}
+
+			volumeTemplate := kvv1.DataVolumeTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: pctx.GetRequestID(),
+				},
+				Spec: cdiv1.DataVolumeSpec{
+					PVC: &v1.PersistentVolumeClaimSpec{
+						AccessModes: []v1.PersistentVolumeAccessMode{
+							v1.ReadWriteOnce,
+						},
+						Resources: v1.VolumeResourceRequirements{
+							Requests: v1.ResourceList{
+								v1.ResourceStorage: resource.MustParse(fmt.Sprintf("%dGi", data.DiskSize)),
+							},
+						},
+					},
+					Source: &cdiv1.DataVolumeSource{
+						PVC: &cdiv1.DataVolumeSourcePVC{
+							Name:      pctx.State.TypedSpec().Value.VolumeId,
+							Namespace: p.namespace,
+						},
+					},
+				},
+			}
+
+			if p.volumeMode != "" {
+				volumeTemplate.Spec.PVC.VolumeMode = &p.volumeMode
+			}
+
+			vm.Spec.DataVolumeTemplates = []kvv1.DataVolumeTemplateSpec{
+				volumeTemplate,
 			}
 
 			if vm.Name == "" {

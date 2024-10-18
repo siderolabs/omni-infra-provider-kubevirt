@@ -9,9 +9,9 @@ replace gopkg.in/yaml.v3 => github.com/unix4ever/yaml v0.0.0-20220527175918-f17b
 require (
 	github.com/cosi-project/runtime v0.6.4
 	github.com/google/uuid v1.6.0
-	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10
+	github.com/planetscale/vtprotobuf v0.6.1-0.20240917153116-6f2963f01587
 	github.com/siderolabs/go-pointer v1.0.0
-	github.com/siderolabs/omni/client v0.0.0-20241002200003-8334c59482d3
+	github.com/siderolabs/omni/client v0.0.0-20241018142957-c754cdc0d76b
 	github.com/spf13/cobra v1.8.1
 	go.uber.org/zap v1.27.0
 	google.golang.org/protobuf v1.34.2
@@ -80,6 +80,7 @@ require (
 	github.com/siderolabs/go-blockdevice/v2 v2.0.2 // indirect
 	github.com/siderolabs/image-factory v0.5.0 // indirect
 	github.com/siderolabs/net v0.4.0 // indirect
+	github.com/siderolabs/proto-codec v0.1.1 // indirect
 	github.com/siderolabs/protoenc v0.2.1 // indirect
 	github.com/siderolabs/talos/pkg/machinery v1.8.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
@@ -91,13 +92,13 @@ require (
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.24.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/term v0.23.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
-	google.golang.org/grpc v1.66.2 // indirect
+	google.golang.org/grpc v1.67.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

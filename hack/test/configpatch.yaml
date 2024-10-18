@@ -1,0 +1,8 @@
+cluster:
+  network:
+    podSubnets:
+      - 10.10.0.0/17
+    serviceSubnets:
+      - 10.10.128.0/17
+  apiServer:
+    disablePodSecurityPolicy: true

@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"slices"
 	"syscall"
 
 	"github.com/siderolabs/omni/client/pkg/client"
@@ -19,6 +20,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/clientcmd"
 	kvv1 "kubevirt.io/api/core/v1"
@@ -75,7 +77,20 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 
-		provisioner := provider.NewProvisioner(k8sClient, cfg.namespace)
+		if cfg.omniAPIEndpoint == "" {
+			return fmt.Errorf("omni-api-endpoint flag is not set")
+		}
+
+		volumeOpts := []v1.PersistentVolumeMode{
+			v1.PersistentVolumeBlock,
+			v1.PersistentVolumeFilesystem,
+		}
+
+		if cfg.dataVolumeMode != "" && slices.Index(volumeOpts, v1.PersistentVolumeMode(cfg.dataVolumeMode)) == -1 {
+			return fmt.Errorf("data-volume-mode flags should be one of %s", volumeOpts)
+		}
+
+		provisioner := provider.NewProvisioner(k8sClient, cfg.namespace, cfg.dataVolumeMode)
 
 		ip, err := infra.NewProvider(meta.ProviderID, provisioner, infra.ProviderConfig{
 			Name:        cfg.providerName,
@@ -89,9 +104,16 @@ var rootCmd = &cobra.Command{
 
 		logger.Info("starting infra provider")
 
-		return ip.Run(cmd.Context(), logger, infra.WithOmniEndpoint(cfg.omniAPIEndpoint), infra.WithClientOptions(
-			client.WithServiceAccount(cfg.serviceAccountKey),
+		clientOptions := []client.Option{
 			client.WithInsecureSkipTLSVerify(cfg.insecureSkipVerify),
+		}
+
+		if cfg.serviceAccountKey != "" {
+			clientOptions = append(clientOptions, client.WithServiceAccount(cfg.serviceAccountKey))
+		}
+
+		return ip.Run(cmd.Context(), logger, infra.WithOmniEndpoint(cfg.omniAPIEndpoint), infra.WithClientOptions(
+			clientOptions...,
 		))
 	},
 }
@@ -103,6 +125,7 @@ var cfg struct {
 	providerDescription string
 	kubeconfigFile      string
 	namespace           string
+	dataVolumeMode      string
 	insecureSkipVerify  bool
 }
 
@@ -123,10 +146,11 @@ func init() {
 	rootCmd.Flags().StringVar(&cfg.omniAPIEndpoint, "omni-api-endpoint", os.Getenv("OMNI_ENDPOINT"),
 		"the endpoint of the Omni API, if not set, defaults to OMNI_ENDPOINT env var.")
 	rootCmd.Flags().StringVar(&meta.ProviderID, "id", meta.ProviderID, "the id of the infra provider, it is used to match the resources with the infra provider label.")
-	rootCmd.Flags().StringVar(&cfg.serviceAccountKey, "key", os.Getenv("OMNI_SERVICE_ACCOUNT_KEY"), "Omni service account key, if not set, defaults to OMNI_SERVICE_ACCOUNT_KEY.")
+	rootCmd.Flags().StringVar(&cfg.serviceAccountKey, "omni-service-account-key", os.Getenv("OMNI_SERVICE_ACCOUNT_KEY"), "Omni service account key, if not set, defaults to OMNI_SERVICE_ACCOUNT_KEY.")
 	rootCmd.Flags().StringVar(&cfg.providerName, "provider-name", "KubeVirt", "provider name as it appears in Omni")
 	rootCmd.Flags().StringVar(&cfg.providerDescription, "provider-description", "KubeVirt infrastructure provider", "Provider description as it appears in Omni")
 	rootCmd.Flags().StringVar(&cfg.kubeconfigFile, "kubeconfig-file", "~/.kube/config", "Kubeconfig file to use to connect to the cluster where KubeVirt is running")
 	rootCmd.Flags().StringVar(&cfg.namespace, "namespace", "default", "Kubernetes namespace to use for the resources created by the provider")
+	rootCmd.Flags().StringVar(&cfg.dataVolumeMode, "data-volume-mode", "", "DataVolume PVC type to use (Block|Filesystem)")
 	rootCmd.Flags().BoolVar(&cfg.insecureSkipVerify, "insecure-skip-verify", false, "ignores untrusted certs on Omni side")
 }
