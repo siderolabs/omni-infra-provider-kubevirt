@@ -19,10 +19,23 @@ Note: Store the service account key securely, it will not be displayed again
 Create a service account kubeconfig for your KubeVirt cluster.
 Store it in `kubeconfig` file.
 
+If you are using `--data-volume-mode=Filesystem` (which is the default), make sure to enable the `ExpandDisks` featuregate in KubeVirt, e.g.:
+```yaml
+apiVersion: kubevirt.io/v1
+kind: KubeVirt
+spec:
+  configuration:
+    developerConfiguration:
+      featureGates:
+        - ExpandDisks
+```
+
+By default VMs will use the bridge network binding mode. In IPv6 environments you might want to use [passt](https://kubevirt.io/user-guide/network/net_binding_plugins/passt/) instead by specifying `--kubevirt-network-binding=passt`.
+
 ### Using Docker
 
 ```bash
-docker run -it -d -v ./kubeconfig:/kubeconfig ghcr.io/siderolabs/omni-infra-provider-kubevirt --kubeconfig /kubeconfig --kubeconfig kubeconfig --omni-api-endpoint https://<account-name>.omni.siderolabs.io/ --key <service-account-key>
+docker run -it -d -v ./kubeconfig:/kubeconfig ghcr.io/siderolabs/omni-infra-provider-kubevirt --kubeconfig-file /kubeconfig --omni-api-endpoint https://<account-name>.omni.siderolabs.io/ --omni-service-account-key <service-account-key> --data-volume-mode=Filesystem
 ```
 
 ### Using Executable
@@ -36,5 +49,5 @@ make omni-infra-provider-linux-amd64
 Run the executable:
 
 ```bash
-_out/omni-infra-provider-linux-amd64 --kubeconfig kubeconfig --omni-api-endpoint https://<account-name>.omni.siderolabs.io/ --key <service-account-key>
+_out/omni-infra-provider-linux-amd64 --kubeconfig kubeconfig-file --omni-api-endpoint https://<account-name>.omni.siderolabs.io/ --omni-service-account-key <service-account-key> --data-volume-mode=Filesystem
 ```
