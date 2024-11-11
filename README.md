@@ -19,6 +19,22 @@ Note: Store the service account key securely, it will not be displayed again
 Create a service account kubeconfig for your KubeVirt cluster.
 Store it in `kubeconfig` file.
 
+If you are using `--data-volume-mode=Filesystem` (which is the default), make sure to enable the `ExpandDisks` featuregate in KubeVirt, e.g.:
+
+```yaml
+apiVersion: kubevirt.io/v1
+kind: KubeVirt
+spec:
+  configuration:
+    developerConfiguration:
+      featureGates:
+        - ExpandDisks
+```
+
+By default VMs will use the bridge network binding mode.
+In IPv6 environments you might want to use [passt](https://kubevirt.io/user-guide/network/net_binding_plugins/passt/) instead.
+Make sure to set the provider configuration in your MachineClass accordingly.
+
 ### Using Docker
 
 ```bash

@@ -6,8 +6,9 @@ package provider
 
 // Data is the provider custom machine config.
 type Data struct {
-	Architecture string `yaml:"architecture"`
-	Cores        int    `yaml:"cores"`
-	DiskSize     int    `yaml:"disk_size"`
-	Memory       uint64 `yaml:"memory"`
+	Architecture   string `yaml:"architecture"`
+	NetworkBinding string `yaml:"network_binding,omitempty"`
+	Cores          int    `yaml:"cores"`
+	DiskSize       int    `yaml:"disk_size"`
+	Memory         uint64 `yaml:"memory"`
 }
