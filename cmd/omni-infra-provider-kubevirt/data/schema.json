@@ -16,6 +16,10 @@
       "type": "integer",
       "minimum": 5,
       "description": "In GB"
+    },
+    "network_binding": {
+      "enum": ["bridge", "passt"],
+      "default": "bridge"
     }
   },
   "required": [

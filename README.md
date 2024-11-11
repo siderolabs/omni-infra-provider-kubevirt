@@ -30,7 +30,7 @@ spec:
         - ExpandDisks
 ```
 
-By default VMs will use the bridge network binding mode. In IPv6 environments you might want to use [passt](https://kubevirt.io/user-guide/network/net_binding_plugins/passt/) instead by specifying `--kubevirt-network-binding=passt`.
+By default VMs will use the bridge network binding mode. In IPv6 environments you might want to use [passt](https://kubevirt.io/user-guide/network/net_binding_plugins/passt/) instead. Make sure to set the provider configuration in your MachineClass accordingly.
 
 ### Using Docker
 
