@@ -11,6 +11,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -33,17 +34,19 @@ import (
 
 // Provisioner implements Talos emulator infra provider.
 type Provisioner struct {
-	k8sClient  client.Client
-	namespace  string
-	volumeMode v1.PersistentVolumeMode
+	k8sClient     client.Client
+	namespace     string
+	volumeMode    v1.PersistentVolumeMode
+	globalPatches []ConfigPatch
 }
 
 // NewProvisioner creates a new provisioner.
-func NewProvisioner(k8sClient client.Client, namespace, volumeMode string) *Provisioner {
+func NewProvisioner(k8sClient client.Client, namespace, volumeMode string, globalPatches []ConfigPatch) *Provisioner {
 	return &Provisioner{
-		k8sClient:  k8sClient,
-		namespace:  namespace,
-		volumeMode: v1.PersistentVolumeMode(volumeMode),
+		k8sClient:     k8sClient,
+		namespace:     namespace,
+		volumeMode:    v1.PersistentVolumeMode(volumeMode),
+		globalPatches: globalPatches,
 	}
 }
 
@@ -158,16 +161,25 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 
 			return provision.NewRetryInterval(time.Second * 10)
 		}),
-		provision.NewStep("syncMachine", func(ctx context.Context, logger *zap.Logger, pctx provision.Context[*resources.Machine]) error {
+		provision.NewStep("generateID", func(_ context.Context, _ *zap.Logger, pctx provision.Context[*resources.Machine]) error {
 			if pctx.State.TypedSpec().Value.Uuid == "" {
 				pctx.State.TypedSpec().Value.Uuid = uuid.NewString()
+				pctx.SetMachineUUID(pctx.State.TypedSpec().Value.Uuid)
 			}
 
-			logger = logger.With(zap.String("id", pctx.State.TypedSpec().Value.Uuid))
+			return nil
+		}),
+		provision.NewStep("createConfigPatches", func(ctx context.Context, _ *zap.Logger, pctx provision.Context[*resources.Machine]) error {
+			for _, patch := range p.globalPatches {
+				if err := pctx.CreateConfigPatch(ctx, strings.TrimSuffix(patch.Prefix, "-")+"-"+pctx.GetRequestID(), []byte(patch.Data)); err != nil {
+					return err
+				}
+			}
 
-			defer func() {
-				pctx.SetMachineUUID(pctx.State.TypedSpec().Value.Uuid)
-			}()
+			return nil
+		}),
+		provision.NewStep("syncMachine", func(ctx context.Context, logger *zap.Logger, pctx provision.Context[*resources.Machine]) error {
+			logger = logger.With(zap.String("id", pctx.State.TypedSpec().Value.Uuid))
 
 			vm := &kvv1.VirtualMachine{}
 
