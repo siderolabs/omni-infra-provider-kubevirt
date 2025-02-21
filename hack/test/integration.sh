@@ -7,7 +7,7 @@ mkdir -p "${TMP}"
 
 # Settings.
 
-TALOS_VERSION=1.8.1
+TALOS_VERSION=1.9.4
 OMNI_VERSION=${OMNI_VERSION:-latest}
 K8S_VERSION="${K8S_VERSION:-v1.30.1}"
 
@@ -137,7 +137,6 @@ TAG="v${TALOS_VERSION}" ${TALOSCTL} cluster create \
   --kubernetes-version=${K8S_VERSION} \
   ${REGISTRY_MIRROR_FLAGS} \
   --provisioner=qemu \
-  --crashdump \
   --cidr 10.11.0.0/24 \
   --vmlinuz-path="https://factory.talos.dev/image/${SCHEMATIC_ID}/v${TALOS_VERSION}/kernel-amd64" \
   --initrd-path="https://factory.talos.dev/image/${SCHEMATIC_ID}/v${TALOS_VERSION}/initramfs-amd64.xz" \

@@ -19,13 +19,10 @@ import (
 // NewMachine creates new Machine.
 func NewMachine(ns, id string) *Machine {
 	return typed.NewResource[MachineSpec, MachineExtension](
-		resource.NewMetadata(ns, MachineType, id, resource.VersionUndefined),
+		resource.NewMetadata(ns, infra.ResourceType("Machine", providermeta.ProviderID), id, resource.VersionUndefined),
 		protobuf.NewResourceSpec(&specs.MachineSpec{}),
 	)
 }
-
-// MachineType is the type of Machine resource.
-var MachineType = infra.ResourceType("Machine", providermeta.ProviderID)
 
 // Machine describes fake machine configuration.
 type Machine = typed.Resource[MachineSpec, MachineExtension]
@@ -39,7 +36,7 @@ type MachineExtension struct{}
 // ResourceDefinition implements [typed.Extension] interface.
 func (MachineExtension) ResourceDefinition() meta.ResourceDefinitionSpec {
 	return meta.ResourceDefinitionSpec{
-		Type:             MachineType,
+		Type:             infra.ResourceType("Machine", providermeta.ProviderID),
 		Aliases:          []resource.Type{},
 		DefaultNamespace: infra.ResourceNamespace(providermeta.ProviderID),
 		PrintColumns:     []meta.PrintColumn{},
