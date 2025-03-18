@@ -29,12 +29,13 @@ SCHEMATIC_ID="376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba"
 
 TALOSCTL="${ARTIFACTS}/talosctl"
 KUBECTL="${TMP}/kubectl"
+OMNICTL="${TMP}/omnictl"
+
+curl -Lo ${OMNICTL} https://github.com/siderolabs/omni/releases/download/v0.47.1/omnictl-linux-amd64
+chmod +x ${OMNICTL}
 
 curl -Lo ${KUBECTL} "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/${PLATFORM}/amd64/kubectl"
 chmod +x ${KUBECTL}
-
-curl -Lo ${ARTIFACTS}/integration-test-linux-amd64 https://github.com/siderolabs/omni/releases/download/${OMNI_VERSION}/integration-test-linux-amd64
-chmod +x ${ARTIFACTS}/integration-test-linux-amd64
 
 # Build registry mirror args.
 
@@ -170,9 +171,16 @@ ${KUBECTL} -n kubevirt wait kv kubevirt --for condition=Available --timeout=10m
 
 # Launch infra provider in the background
 
+export OMNI_ENDPOINT=https://localhost:8099
+export OMNI_SERVICE_ACCOUNT_KEY=$(cat _out/omni/key)
+
+${OMNICTL} --insecure-skip-tls-verify serviceaccount create --role=InfraProvider infra-provider:kubevirt --use-user-role=false | tail -n4 | head -n3 | awk '{print "export " $0}' > ${TMP}/env
+
+source ${TMP}/env
+
 nice -n 10 ${ARTIFACTS}/omni-infra-provider-kubevirt-linux-amd64 \
   --kubeconfig-file=${KUBECONFIG} \
-  --omni-api-endpoint http://localhost:8081 \
+  --omni-api-endpoint https://localhost:8099 \
   --data-volume-mode Filesystem \
   --insecure-skip-verify&
 
