@@ -7,7 +7,7 @@ Can be used to automatically provision Talos nodes in a KubeVirt cluster.
 First you need to create a service account for the infrastructure provider.
 
 ```bash
-$ omnictl serviceaccount create --role=InfraProvider kubevirt
+$ omnictl serviceaccount create --role=InfraProvider --use-user-role=false infra-provider:kubevirt
 
 Set the following environment variables to use the service account:
 OMNI_ENDPOINT=https://<account-name>.omni.siderolabs.io/
@@ -38,7 +38,7 @@ Make sure to set the provider configuration in your MachineClass accordingly.
 ### Using Docker
 
 ```bash
-docker run -it -d -v ./kubeconfig:/kubeconfig ghcr.io/siderolabs/omni-infra-provider-kubevirt --kubeconfig /kubeconfig --kubeconfig kubeconfig --omni-api-endpoint https://<account-name>.omni.siderolabs.io/ --key <service-account-key>
+docker run -it -d -v ./kubeconfig:/kubeconfig ghcr.io/siderolabs/omni-infra-provider-kubevirt --kubeconfig-file /kubeconfig --omni-api-endpoint https://<account-name>.omni.siderolabs.io/ --omni-service-account-key <service-account-key>
 ```
 
 ### Using Executable
@@ -52,5 +52,5 @@ make omni-infra-provider-linux-amd64
 Run the executable:
 
 ```bash
-_out/omni-infra-provider-linux-amd64 --kubeconfig kubeconfig --omni-api-endpoint https://<account-name>.omni.siderolabs.io/ --key <service-account-key>
+_out/omni-infra-provider-linux-amd64 --kubeconfig-file kubeconfig --omni-api-endpoint https://<account-name>.omni.siderolabs.io/ --omni-service-account-key <service-account-key>
 ```
