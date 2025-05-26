@@ -31,7 +31,7 @@ TALOSCTL="${ARTIFACTS}/talosctl"
 KUBECTL="${TMP}/kubectl"
 OMNICTL="${TMP}/omnictl"
 
-curl -Lo ${OMNICTL} https://github.com/siderolabs/omni/releases/download/v0.47.1/omnictl-linux-amd64
+curl -Lo ${OMNICTL} $(curl https://api.github.com/repos/siderolabs/omni/releases/latest  |  jq -r '.assets[] | select(.name | contains ("omnictl-linux-amd64")) | .browser_download_url')
 chmod +x ${OMNICTL}
 
 curl -Lo ${KUBECTL} "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/${PLATFORM}/amd64/kubectl"
@@ -174,7 +174,7 @@ ${KUBECTL} -n kubevirt wait kv kubevirt --for condition=Available --timeout=10m
 export OMNI_ENDPOINT=https://localhost:8099
 export OMNI_SERVICE_ACCOUNT_KEY=$(cat _out/omni/key)
 
-${OMNICTL} --insecure-skip-tls-verify serviceaccount create --role=InfraProvider infra-provider:kubevirt --use-user-role=false | tail -n4 | head -n3 | awk '{print "export " $0}' > ${TMP}/env
+${OMNICTL} --insecure-skip-tls-verify infraprovider create kubevirt | tail -n5 | head -n2 | awk '{print "export " $0}' > ${TMP}/env
 
 source ${TMP}/env
 
