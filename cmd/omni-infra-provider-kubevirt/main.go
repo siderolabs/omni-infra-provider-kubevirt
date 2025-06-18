@@ -15,6 +15,7 @@ import (
 	"slices"
 	"syscall"
 
+	"github.com/go-logr/logr"
 	"github.com/siderolabs/omni/client/pkg/client"
 	"github.com/siderolabs/omni/client/pkg/infra"
 	"github.com/spf13/cobra"
@@ -26,6 +27,7 @@ import (
 	kvv1 "kubevirt.io/api/core/v1"
 	cdiv1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/siderolabs/omni-infra-provider-kubevirt/internal/pkg/provider"
 	"github.com/siderolabs/omni-infra-provider-kubevirt/internal/pkg/provider/meta"
@@ -52,6 +54,8 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("failed to create logger: %w", err)
 		}
+
+		log.SetLogger(logr.Discard())
 
 		scheme := runtime.NewScheme()
 

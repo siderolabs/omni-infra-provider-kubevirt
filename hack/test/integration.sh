@@ -109,8 +109,8 @@ docker run -it -d --network host -v ./hack/certs:/certs \
     -e SIDEROLINK_DEV_JOIN_TOKEN="${JOIN_TOKEN}" \
     -e VAULT_TOKEN=dev-o-token \
     -e VAULT_ADDR='http://127.0.0.1:8200' \
+    --name omni \
     ghcr.io/siderolabs/omni:${OMNI_VERSION} \
-    omni-integration \
     --siderolink-wireguard-advertised-addr 10.11.0.1:50180 \
     --siderolink-api-advertised-url "grpc://10.11.0.1:8090" \
     --machine-api-bind-addr 0.0.0.0:8090 \
@@ -129,8 +129,9 @@ docker run -it -d --network host -v ./hack/certs:/certs \
     --etcd-embedded-unsafe-fsync=true \
     --create-initial-service-account \
     --initial-service-account-key-path=/_out/key \
-    "${REGISTRY_MIRROR_FLAGS[@]}" \
-    &
+    "${REGISTRY_MIRROR_FLAGS[@]}"
+
+docker logs -f omni &> ${TMP}/omni.log &
 
 echo "creating cluster ${CREATED_CLUSTER}"
 TAG="v${TALOS_VERSION}" ${TALOSCTL} cluster create \
@@ -190,9 +191,11 @@ docker run \
   -e OMNI_SERVICE_ACCOUNT_KEY=$(cat _out/omni/key) \
   --network host \
   ghcr.io/siderolabs/omni-integration-test:${OMNI_VERSION} \
-  --endpoint https://localhost:8099 \
-  --talos-version=${TALOS_VERSION} \
-  --test.run "ScaleUpAndDownAutoProvisionMachineSets" \
-  --infra-provider=kubevirt \
-  --scale-timeout 5m \
-  --provider-data='{disk_size: 8, cores: 4, memory: 2048, architecture: amd64}'
+  --omni.endpoint https://localhost:8099 \
+  --omni.talos-version=${TALOS_VERSION} \
+  --test.run "TestIntegration/Suites/(ScaleUpAndDownAutoProvisionMachineSets)" \
+  --omni.infra-provider=kubevirt \
+  --omni.scale-timeout 5m \
+  --omni.provider-data='{disk_size: 8, cores: 4, memory: 2048, architecture: amd64}' \
+  --test.failfast \
+  --test.v

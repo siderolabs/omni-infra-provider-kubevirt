@@ -117,8 +117,13 @@ spec:
           always: true
           continueOnError: true
           paths:
-            - "~/.talos/clusters/**/*.log"
+            - "~/.talos/clusters"
             - "!~/.talos/clusters/**/swtpm.log"
+        - name: omni-logs
+          always: true
+          continueOnError: true
+          paths:
+            - "/tmp/kubevirt-e2e"
 ---
 kind: common.SOPS
 spec:
