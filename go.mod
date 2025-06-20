@@ -1,13 +1,16 @@
 module github.com/siderolabs/omni-infra-provider-kubevirt
 
-go 1.24.3
+go 1.24.4
 
 // forked go-yaml that introduces RawYAML interface, which can be used to populate YAML fields using bytes
 // which are then encoded as a valid YAML blocks with proper indentation
 replace gopkg.in/yaml.v3 => github.com/unix4ever/yaml v0.0.0-20220527175918-f17b0f05cf2c
 
+replace github.com/siderolabs/omni/client => github.com/unix4ever/omni/client v0.0.0-20250620152828-22c12fe75b51
+
 require (
 	github.com/cosi-project/runtime v0.10.6
+	github.com/go-logr/logr v1.4.3
 	github.com/google/uuid v1.6.0
 	github.com/planetscale/vtprotobuf v0.6.1-0.20241121165744-79df5c4772f2
 	github.com/siderolabs/go-pointer v1.0.1
@@ -41,7 +44,6 @@ require (
 	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
 	github.com/fxamacker/cbor/v2 v2.8.0 // indirect
 	github.com/gertd/go-pluralize v0.2.1 // indirect
-	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-openapi/jsonpointer v0.21.1 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.1 // indirect

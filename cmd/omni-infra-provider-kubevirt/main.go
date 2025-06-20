@@ -118,7 +118,7 @@ var rootCmd = &cobra.Command{
 
 		return ip.Run(cmd.Context(), logger, infra.WithOmniEndpoint(cfg.omniAPIEndpoint), infra.WithClientOptions(
 			clientOptions...,
-		))
+		), infra.WithEncodeRequestIDsIntoTokens())
 	},
 }
 
