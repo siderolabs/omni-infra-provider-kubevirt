@@ -63,17 +63,19 @@ function cleanup() {
     ${KUBECTL} get datavolume -A || true
   fi
 
-  rm -rf ${TMP}
+  if [[ "${CI:-false}" == "false" ]]; then
+    rm -rf ${TMP}
 
-  if [[ ! -z ${CREATED_CLUSTER} ]]; then
-    echo "destroying created cluster"
-    ${TALOSCTL} cluster destroy --name=${CREATED_CLUSTER} --provisioner=qemu || true
-    rm -rf ~/.talos/clusters/${CREATED_CLUSTER}
+    if [[ ! -z ${CREATED_CLUSTER} ]]; then
+      echo "destroying created cluster"
+      ${TALOSCTL} cluster destroy --name=${CREATED_CLUSTER} --provisioner=qemu || true
+      rm -rf ~/.talos/clusters/${CREATED_CLUSTER}
+    fi
+
+    docker rm -f omni-integration vault-dev
+
+    rm -rf _out/omni/
   fi
-
-  docker rm -f omni-integration vault-dev
-
-  rm -rf _out/omni/
 }
 
 trap cleanup EXIT SIGINT
@@ -110,7 +112,7 @@ docker run -it -d --network host -v ./hack/certs:/certs \
     -e VAULT_TOKEN=dev-o-token \
     -e VAULT_ADDR='http://127.0.0.1:8200' \
     --name omni \
-    ghcr.io/siderolabs/omni:${OMNI_VERSION} \
+    ghcr.io/unix4ever/omni:latest \
     --siderolink-wireguard-advertised-addr 10.11.0.1:50180 \
     --siderolink-api-advertised-url "grpc://10.11.0.1:8090" \
     --machine-api-bind-addr 0.0.0.0:8090 \
