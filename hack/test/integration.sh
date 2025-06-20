@@ -63,15 +63,17 @@ function cleanup() {
     ${KUBECTL} get datavolume -A || true
   fi
 
-  rm -rf ${TMP}
+  if [[ "${CI:-false}" == "false" ]]; then
+    rm -rf ${TMP}
 
-  if [[ ! -z ${CREATED_CLUSTER} ]]; then
-    echo "destroying created cluster"
-    ${TALOSCTL} cluster destroy --name=${CREATED_CLUSTER} --provisioner=qemu || true
-    rm -rf ~/.talos/clusters/${CREATED_CLUSTER}
+    if [[ ! -z ${CREATED_CLUSTER} ]]; then
+      echo "destroying created cluster"
+      ${TALOSCTL} cluster destroy --name=${CREATED_CLUSTER} --provisioner=qemu || true
+      rm -rf ~/.talos/clusters/${CREATED_CLUSTER}
+    fi
+
+    docker rm -f omni-integration vault-dev
   fi
-
-  docker rm -f omni-integration vault-dev
 
   rm -rf _out/omni/
 }

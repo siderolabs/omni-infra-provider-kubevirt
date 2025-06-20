@@ -1,6 +1,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED, PLEASE DO NOT EDIT.
 #
-# Generated on 2025-06-19T18:41:34Z by kres 5128bc1.
+# Generated on 2025-06-20T17:37:35Z by kres 5128bc1.
 
 name: default
 concurrency:
@@ -130,7 +130,7 @@ jobs:
         with:
           name: talos-logs
           path: |-
-            ~/.talos/clusters
+            ~/.talos/clusters/**/*.log
             !~/.talos/clusters/**/swtpm.log
           retention-days: "5"
       - name: save-omni-logs-artifacts
@@ -138,7 +138,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: omni-logs
-          path: /tmp/kubevirt-e2e
+          path: /tmp/kubevirt-e2e/*.log
           retention-days: "5"
       - name: Generate Checksums
         if: startsWith(github.ref, 'refs/tags/')

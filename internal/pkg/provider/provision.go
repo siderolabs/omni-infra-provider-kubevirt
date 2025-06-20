@@ -165,10 +165,6 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 
 			logger = logger.With(zap.String("id", pctx.State.TypedSpec().Value.Uuid))
 
-			defer func() {
-				pctx.SetMachineUUID(pctx.State.TypedSpec().Value.Uuid)
-			}()
-
 			vm := &kvv1.VirtualMachine{}
 
 			err := p.k8sClient.Get(ctx, client.ObjectKey{
