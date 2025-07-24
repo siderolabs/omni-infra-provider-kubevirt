@@ -1,8 +1,8 @@
-# syntax = docker/dockerfile-upstream:1.16.0-labs
+# syntax = docker/dockerfile-upstream:1.17.1-labs
 
 # THIS FILE WAS AUTOMATICALLY GENERATED, PLEASE DO NOT EDIT.
 #
-# Generated on 2025-06-18T14:35:02Z by kres 5128bc1.
+# Generated on 2025-07-24T12:03:40Z by kres 4c6b4c0.
 
 ARG TOOLCHAIN
 
@@ -11,7 +11,7 @@ FROM ghcr.io/siderolabs/ca-certificates:v1.10.0 AS image-ca-certificates
 FROM ghcr.io/siderolabs/fhs:v1.10.0 AS image-fhs
 
 # runs markdownlint
-FROM docker.io/oven/bun:1.2.15-alpine AS lint-markdown
+FROM docker.io/oven/bun:1.2.18-alpine AS lint-markdown
 WORKDIR /src
 RUN bun i markdownlint-cli@0.45.0 sentences-per-line@0.3.0
 COPY .markdownlint.json .
@@ -107,13 +107,13 @@ RUN --mount=type=cache,target=/root/.cache/go-build,id=omni-infra-provider-kubev
 FROM base AS unit-tests-race
 WORKDIR /src
 ARG TESTPKGS
-RUN --mount=type=cache,target=/root/.cache/go-build,id=omni-infra-provider-kubevirt/root/.cache/go-build --mount=type=cache,target=/go/pkg,id=omni-infra-provider-kubevirt/go/pkg --mount=type=cache,target=/tmp,id=omni-infra-provider-kubevirt/tmp CGO_ENABLED=1 go test -v -race -count 1 ${TESTPKGS}
+RUN --mount=type=cache,target=/root/.cache/go-build,id=omni-infra-provider-kubevirt/root/.cache/go-build --mount=type=cache,target=/go/pkg,id=omni-infra-provider-kubevirt/go/pkg --mount=type=cache,target=/tmp,id=omni-infra-provider-kubevirt/tmp CGO_ENABLED=1 go test -race ${TESTPKGS}
 
 # runs unit-tests
 FROM base AS unit-tests-run
 WORKDIR /src
 ARG TESTPKGS
-RUN --mount=type=cache,target=/root/.cache/go-build,id=omni-infra-provider-kubevirt/root/.cache/go-build --mount=type=cache,target=/go/pkg,id=omni-infra-provider-kubevirt/go/pkg --mount=type=cache,target=/tmp,id=omni-infra-provider-kubevirt/tmp go test -v -covermode=atomic -coverprofile=coverage.txt -coverpkg=${TESTPKGS} -count 1 ${TESTPKGS}
+RUN --mount=type=cache,target=/root/.cache/go-build,id=omni-infra-provider-kubevirt/root/.cache/go-build --mount=type=cache,target=/go/pkg,id=omni-infra-provider-kubevirt/go/pkg --mount=type=cache,target=/tmp,id=omni-infra-provider-kubevirt/tmp go test -covermode=atomic -coverprofile=coverage.txt -coverpkg=${TESTPKGS} ${TESTPKGS}
 
 # cleaned up specs and compiled versions
 FROM scratch AS generate

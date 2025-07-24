@@ -7,9 +7,9 @@ mkdir -p "${TMP}"
 
 # Settings.
 
-TALOS_VERSION=1.9.4
+TALOS_VERSION=1.9.6
 OMNI_VERSION=${OMNI_VERSION:-latest}
-K8S_VERSION="${K8S_VERSION:-v1.30.1}"
+K8S_VERSION="${K8S_VERSION:-1.32.7}"
 
 ARTIFACTS=_out
 JOIN_TOKEN=testonly
@@ -138,7 +138,7 @@ docker logs -f omni &> ${TMP}/omni.log &
 echo "creating cluster ${CREATED_CLUSTER}"
 TAG="v${TALOS_VERSION}" ${TALOSCTL} cluster create \
   --name=${CREATED_CLUSTER} \
-  --kubernetes-version=${K8S_VERSION} \
+  --kubernetes-version=v${K8S_VERSION} \
   ${REGISTRY_MIRROR_FLAGS} \
   --provisioner=qemu \
   --cidr 10.11.0.0/24 \
@@ -164,7 +164,7 @@ ${KUBECTL} apply -f https://github.com/kubevirt/kubevirt/releases/download/${REL
 
 ${KUBECTL} apply -f https://github.com/kubevirt/kubevirt/releases/download/${RELEASE}/kubevirt-cr.yaml
 
-${KUBECTL} apply -f https://github.com/kubevirt/containerized-data-importer/releases/download/v1.60.1/cdi-operator.yaml
+${KUBECTL} apply -f https://github.com/kubevirt/containerized-data-importer/releases/download/v1.62.0/cdi-operator.yaml
 ${KUBECTL} apply -f hack/test/manifests/cdi-cr.yaml
 ${KUBECTL} apply -f hack/test/manifests/local-path-storage.yaml
 
@@ -200,4 +200,5 @@ docker run \
   --omni.scale-timeout 5m \
   --omni.provider-data='{disk_size: 8, cores: 4, memory: 2048, architecture: amd64}' \
   --test.failfast \
+  --omni.kubernetes-version=${K8S_VERSION} \
   --test.v
