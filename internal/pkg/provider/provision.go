@@ -116,7 +116,7 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 						},
 						Resources: v1.VolumeResourceRequirements{
 							Requests: v1.ResourceList{
-								v1.ResourceStorage: resource.MustParse("1.5Gi"),
+								v1.ResourceStorage: resource.MustParse("3Gi"),
 							},
 						},
 					},

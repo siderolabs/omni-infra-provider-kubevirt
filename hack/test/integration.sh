@@ -7,7 +7,7 @@ mkdir -p "${TMP}"
 
 # Settings.
 
-TALOS_VERSION=1.9.6
+TALOS_VERSION=1.10.5
 OMNI_VERSION=${OMNI_VERSION:-latest}
 K8S_VERSION="${K8S_VERSION:-1.32.7}"
 
