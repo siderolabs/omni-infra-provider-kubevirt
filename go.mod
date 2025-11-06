@@ -6,18 +6,18 @@ require (
 	github.com/cosi-project/runtime v1.12.0
 	github.com/go-logr/logr v1.4.3
 	github.com/google/uuid v1.6.0
-	github.com/planetscale/vtprotobuf v0.6.1-0.20241121165744-79df5c4772f2
+	github.com/planetscale/vtprotobuf ba97887b0a25
 	github.com/siderolabs/go-pointer v1.0.1
-	github.com/siderolabs/omni/client v1.3.0-beta.1.0.20251106113647-e38f0ffe52b0
+	github.com/siderolabs/omni/client v1.3.0-beta.2
 	github.com/spf13/cobra v1.10.1
 	go.uber.org/zap v1.27.0
 	google.golang.org/protobuf v1.36.10
-	k8s.io/api v0.35.0-alpha.1
-	k8s.io/apimachinery v0.35.0-alpha.1
-	k8s.io/client-go v0.35.0-alpha.1
-	kubevirt.io/api v1.5.2
-	kubevirt.io/containerized-data-importer-api v1.62.0
-	sigs.k8s.io/controller-runtime v0.21.0
+	k8s.io/api v0.35.0-alpha.3
+	k8s.io/apimachinery v0.35.0-alpha.3
+	k8s.io/client-go v11.0.0+incompatible
+	kubevirt.io/api v1.6.2
+	kubevirt.io/containerized-data-importer-api v1.63.1
+	sigs.k8s.io/controller-runtime v0.22.4
 )
 
 require (
