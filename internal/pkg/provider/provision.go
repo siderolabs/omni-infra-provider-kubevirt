@@ -28,6 +28,7 @@ import (
 	cdiv1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/siderolabs/omni-infra-provider-kubevirt/internal/pkg/provider/data"
 	"github.com/siderolabs/omni-infra-provider-kubevirt/internal/pkg/provider/resources"
 )
 
@@ -80,7 +81,7 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 				return err
 			}
 
-			var data Data
+			var data data.Data
 
 			err = pctx.UnmarshalProviderData(&data)
 			if err != nil {
@@ -116,7 +117,7 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 						},
 						Resources: v1.VolumeResourceRequirements{
 							Requests: v1.ResourceList{
-								v1.ResourceStorage: resource.MustParse("3Gi"),
+								v1.ResourceStorage: resource.MustParse("5Gi"),
 							},
 						},
 					},
@@ -181,7 +182,7 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 				return nil
 			}
 
-			var data Data
+			var data data.Data
 
 			err = pctx.UnmarshalProviderData(&data)
 			if err != nil {

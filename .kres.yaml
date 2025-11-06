@@ -17,6 +17,10 @@ spec:
     - source: api/specs/specs.proto
       subdirectory: specs
 ---
+kind: common.GHWorkflow
+spec:
+  customRunnerGroup: large
+---
 kind: auto.CustomSteps
 spec:
   steps:

@@ -30,11 +30,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/siderolabs/omni-infra-provider-kubevirt/internal/pkg/provider"
+	"github.com/siderolabs/omni-infra-provider-kubevirt/internal/pkg/provider/data"
 	"github.com/siderolabs/omni-infra-provider-kubevirt/internal/pkg/provider/meta"
 )
-
-//go:embed data/schema.json
-var schema string
 
 //go:embed data/icon.svg
 var icon []byte
@@ -100,7 +98,7 @@ var rootCmd = &cobra.Command{
 			Name:        cfg.providerName,
 			Description: cfg.providerDescription,
 			Icon:        base64.RawStdEncoding.EncodeToString(icon),
-			Schema:      schema,
+			Schema:      string(data.Schema),
 		})
 		if err != nil {
 			return fmt.Errorf("failed to create infra provider: %w", err)
