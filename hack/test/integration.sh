@@ -131,6 +131,7 @@ docker run -it -d --network host -v ./hack/certs:/certs \
     --etcd-embedded-unsafe-fsync=true \
     --create-initial-service-account \
     --initial-service-account-key-path=/_out/key \
+    --sqlite-storage-path=/_out/sqlite.db \
     "${REGISTRY_MIRROR_FLAGS[@]}"
 
 docker logs -f omni &> ${TMP}/omni.log &
@@ -198,7 +199,7 @@ docker run \
   --test.run "TestIntegration/Suites/(ScaleUpAndDownAutoProvisionMachineSets)" \
   --omni.infra-provider=kubevirt \
   --omni.scale-timeout 5m \
-  --omni.provider-data='{disk_size: 8, cores: 4, memory: 2048, architecture: amd64}' \
+  --omni.provider-data='{disk_size: 10, cores: 4, memory: 2048, architecture: amd64}' \
   --test.failfast \
   --omni.kubernetes-version=${K8S_VERSION} \
   --test.v

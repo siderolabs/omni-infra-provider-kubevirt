@@ -10,15 +10,25 @@
       "minimum": 2048
     },
     "architecture": {
-      "enum": ["amd64", "arm64"]
+      "enum": [
+        "amd64",
+        "arm64"
+      ]
     },
     "disk_size": {
       "type": "integer",
-      "minimum": 5,
+      "minimum": 10,
       "description": "In GB"
     },
+    "storage_class_name": {
+      "type": "string",
+      "description": "name of the kubernetes storage class used for volumes"
+    },
     "network_binding": {
-      "enum": ["bridge", "passt"],
+      "enum": [
+        "bridge",
+        "passt"
+      ],
       "default": "bridge"
     }
   },

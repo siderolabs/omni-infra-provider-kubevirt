@@ -73,7 +73,7 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 
 			return nil
 		}),
-		provision.NewStep("ensureVolume", func(ctx context.Context, _ *zap.Logger, pctx provision.Context[*resources.Machine]) error {
+		provision.NewStep("ensureVolume", func(ctx context.Context, logger *zap.Logger, pctx provision.Context[*resources.Machine]) error {
 			pctx.State.TypedSpec().Value.TalosVersion = pctx.GetTalosVersion()
 
 			url, err := url.Parse(constants.ImageFactoryBaseURL)
@@ -101,8 +101,8 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 			}
 
 			volumeID := hex.EncodeToString(hash.Sum(nil))
-
 			pctx.State.TypedSpec().Value.VolumeId = volumeID
+			storageClassName := data.StorageClasName
 
 			volume := cdiv1.DataVolume{
 				Spec: cdiv1.DataVolumeSpec{
@@ -115,9 +115,12 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 						AccessModes: []v1.PersistentVolumeAccessMode{
 							v1.ReadWriteOnce,
 						},
+						StorageClassName: &storageClassName,
 						Resources: v1.VolumeResourceRequirements{
 							Requests: v1.ResourceList{
-								v1.ResourceStorage: resource.MustParse("5Gi"),
+								// this must be >= the size of the (uncompressed) disk that is being imported,
+								// else the associated DataVolume will be stuck in importing state.
+								v1.ResourceStorage: resource.MustParse("10Gi"),
 							},
 						},
 					},
@@ -140,22 +143,32 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 				Namespace: p.namespace,
 				Name:      volumeID,
 			}, vol)
-			if err != nil && !errors.IsNotFound(err) {
-				return err
-			}
+			if err != nil {
+				// return on any error other than "volume not found".
+				if !errors.IsNotFound(err) {
+					return err
+				}
 
-			if vol.Status.Phase == cdiv1.Succeeded {
-				return nil
-			}
-
-			if vol.Name == "" {
+				// volume does not exist, create it.
 				volume.Name = volumeID
 				volume.Namespace = p.namespace
 
 				if err = p.k8sClient.Create(ctx, &volume); err != nil {
 					return err
 				}
+
+				logger.Info("created DataVolume", zap.String("name", vol.Name))
+
+				return provision.NewRetryInterval(time.Second * 10)
 			}
+
+			// data import takes a while. This function is done if data import has succeeded.
+			if vol.Status.Phase == cdiv1.Succeeded {
+				return nil
+			}
+
+			// data import is still running, come back later.
+			logger.Info("waiting for volume", zap.String("currrent_phase", string(vol.Status.Phase)))
 
 			return provision.NewRetryInterval(time.Second * 10)
 		}),

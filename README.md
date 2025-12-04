@@ -35,6 +35,9 @@ By default VMs will use the bridge network binding mode.
 In IPv6 environments you might want to use [passt](https://kubevirt.io/user-guide/network/net_binding_plugins/passt/) instead.
 Make sure to set the provider configuration in your MachineClass accordingly.
 
+Keep in mind that the machines created might might have an address overlap with talos clusters created on them, if the defaults are used in both the host and guest systems.
+Users must actively mitigate this by choosing Pod- and ServiceCIDRs that do not overlap with those of the host.
+
 ### Using Docker
 
 ```bash
