@@ -27,7 +27,17 @@
     },
     "tolerations": {
       "type": "string",
-      "description": "Tolerations for the VirtualMachine encoded as a JSON array"
+      "description": "Tolerations for the VirtualMachine encoded as a JSON array",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "vm_labels": {
+      "type": "object",
+      "description": "Custom labels to apply to the VirtualMachine resource",
+      "additionalProperties": {
+        "type": "string"
+      }
     }
   },
   "required": [
