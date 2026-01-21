@@ -298,12 +298,12 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 				volumeTemplate,
 			}
 
-			// Apply user-provided labels to the VirtualMachine
+			// Apply user-provided labels to the launcher pod
 			if len(data.VMLabels) > 0 {
-				if vm.Labels == nil {
-					vm.Labels = map[string]string{}
+				if vm.Spec.Template.ObjectMeta.Labels == nil {
+					vm.Spec.Template.ObjectMeta.Labels = map[string]string{}
 				}
-				maps.Copy(vm.Labels, data.VMLabels)
+				maps.Copy(vm.Spec.Template.ObjectMeta.Labels, data.VMLabels)
 			}
 
 			if vm.Name == "" {
