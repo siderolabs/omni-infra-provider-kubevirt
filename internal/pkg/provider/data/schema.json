@@ -17,6 +17,10 @@
       "minimum": 5,
       "description": "In GB"
     },
+    "storage_class_name": {
+      "type": "string",
+      "description": "StorageClasName to use for the DataVolume (optional)"
+    },
     "network_binding": {
       "enum": ["bridge", "passt"],
       "default": "bridge"

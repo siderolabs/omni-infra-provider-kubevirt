@@ -124,6 +124,10 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 				},
 			}
 
+			if data.StorageClassName != "" {
+				volume.Spec.PVC.StorageClassName = &data.StorageClassName
+			}
+
 			if p.volumeMode != "" {
 				volume.Spec.PVC.VolumeMode = &p.volumeMode
 			}
@@ -287,6 +291,10 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 						},
 					},
 				},
+			}
+
+			if data.StorageClassName != "" {
+				volumeTemplate.Spec.PVC.StorageClassName = &data.StorageClassName
 			}
 
 			if p.volumeMode != "" {
