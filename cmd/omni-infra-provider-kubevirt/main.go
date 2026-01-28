@@ -23,6 +23,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	kvv1 "kubevirt.io/api/core/v1"
 	cdiv1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
@@ -67,9 +68,17 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 
-		config, err := clientcmd.BuildConfigFromFlags("", cfg.kubeconfigFile)
-		if err != nil {
-			return fmt.Errorf("failed to read Kubernetes config: %w", err)
+		var config *rest.Config
+		if cfg.inClusterConfig {
+			config, err = rest.InClusterConfig()
+			if err != nil {
+				return fmt.Errorf("failed to read in-cluster Kubernetes config: %w", err)
+			}
+		} else {
+			config, err = clientcmd.BuildConfigFromFlags("", cfg.kubeconfigFile)
+			if err != nil {
+				return fmt.Errorf("failed to read Kubernetes config: %w", err)
+			}
 		}
 
 		k8sClient, err := k8sclient.New(config, k8sclient.Options{
@@ -125,6 +134,7 @@ var cfg struct {
 	serviceAccountKey   string
 	providerName        string
 	providerDescription string
+	inClusterConfig     bool
 	kubeconfigFile      string
 	namespace           string
 	dataVolumeMode      string
@@ -151,6 +161,7 @@ func init() {
 	rootCmd.Flags().StringVar(&cfg.serviceAccountKey, "omni-service-account-key", os.Getenv("OMNI_SERVICE_ACCOUNT_KEY"), "Omni service account key, if not set, defaults to OMNI_SERVICE_ACCOUNT_KEY.")
 	rootCmd.Flags().StringVar(&cfg.providerName, "provider-name", "KubeVirt", "provider name as it appears in Omni")
 	rootCmd.Flags().StringVar(&cfg.providerDescription, "provider-description", "KubeVirt infrastructure provider", "Provider description as it appears in Omni")
+	rootCmd.Flags().BoolVar(&cfg.inClusterConfig, "in-cluster-config", false, "Use an in-cluster kubernetes client rather than a kubeconfig file. Useful if the provider is running in the same cluster as Kubevirt.")
 	rootCmd.Flags().StringVar(&cfg.kubeconfigFile, "kubeconfig-file", "~/.kube/config", "Kubeconfig file to use to connect to the cluster where KubeVirt is running")
 	rootCmd.Flags().StringVar(&cfg.namespace, "namespace", "default", "Kubernetes namespace to use for the resources created by the provider")
 	rootCmd.Flags().StringVar(&cfg.dataVolumeMode, "data-volume-mode", "", "DataVolume PVC type to use (Block|Filesystem)")
