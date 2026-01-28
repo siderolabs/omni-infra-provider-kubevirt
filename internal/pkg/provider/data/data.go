@@ -17,10 +17,11 @@ var Schema []byte
 
 // Data and schema.json should be in sync.
 type Data struct {
-	Cores            int    `yaml:"cores"`
-	Memory           uint64 `yaml:"memory"`
-	Architecture     string `yaml:"architecture"`
-	DiskSize         int    `yaml:"disk_size"`
 	StorageClassName string `yaml:"storage_class_name"`
 	NetworkBinding   string `yaml:"network_binding,omitempty"`
+	Architecture     string `yaml:"architecture"`
+	Tolerations      string `yaml:"tolerations"`
+	Cores            int    `yaml:"cores"`
+	Memory           uint64 `yaml:"memory"`
+	DiskSize         int    `yaml:"disk_size"`
 }

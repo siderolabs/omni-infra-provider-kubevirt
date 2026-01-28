@@ -24,6 +24,10 @@
     "network_binding": {
       "enum": ["bridge", "passt"],
       "default": "bridge"
+    },
+    "tolerations": {
+      "type": "string",
+      "description": "Tolerations for the VirtualMachine encoded as a JSON array"
     }
   },
   "required": [

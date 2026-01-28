@@ -9,6 +9,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"time"
@@ -267,6 +268,17 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 						},
 					},
 				},
+			}
+
+			if data.Tolerations != "" {
+				var tolerations []v1.Toleration
+
+				err = json.Unmarshal([]byte(data.Tolerations), &tolerations)
+				if err != nil {
+					return err
+				}
+
+				vm.Spec.Template.Spec.Tolerations = tolerations
 			}
 
 			volumeTemplate := kvv1.DataVolumeTemplateSpec{

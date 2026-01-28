@@ -1,6 +1,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED, PLEASE DO NOT EDIT.
 #
-# Generated on 2025-07-24T12:03:40Z by kres 4c6b4c0.
+# Generated on 2026-02-02T14:02:07Z by kres dc032d7.
 
 version: "2"
 
@@ -9,6 +9,7 @@ run:
   modules-download-mode: readonly
   issues-exit-code: 1
   tests: true
+  build-tags: []
 
 # output configuration options
 output:
