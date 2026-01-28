@@ -15,7 +15,6 @@ import (
 
 	"github.com/google/uuid"
 	pointer "github.com/siderolabs/go-pointer"
-	"github.com/siderolabs/omni/client/pkg/constants"
 	"github.com/siderolabs/omni/client/pkg/infra/provision"
 	"github.com/siderolabs/omni/client/pkg/omni/resources/infra"
 	"go.uber.org/zap"
@@ -35,14 +34,16 @@ import (
 // Provisioner implements Talos emulator infra provider.
 type Provisioner struct {
 	k8sClient  client.Client
+	factoryURL string
 	namespace  string
 	volumeMode v1.PersistentVolumeMode
 }
 
 // NewProvisioner creates a new provisioner.
-func NewProvisioner(k8sClient client.Client, namespace, volumeMode string) *Provisioner {
+func NewProvisioner(k8sClient client.Client, factoryURL, namespace, volumeMode string) *Provisioner {
 	return &Provisioner{
 		k8sClient:  k8sClient,
+		factoryURL: factoryURL,
 		namespace:  namespace,
 		volumeMode: v1.PersistentVolumeMode(volumeMode),
 	}
@@ -76,7 +77,7 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 		provision.NewStep("ensureVolume", func(ctx context.Context, _ *zap.Logger, pctx provision.Context[*resources.Machine]) error {
 			pctx.State.TypedSpec().Value.TalosVersion = pctx.GetTalosVersion()
 
-			url, err := url.Parse(constants.ImageFactoryBaseURL)
+			url, err := url.Parse(p.factoryURL)
 			if err != nil {
 				return err
 			}
