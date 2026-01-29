@@ -72,7 +72,7 @@ function cleanup() {
       rm -rf ~/.talos/clusters/${CREATED_CLUSTER}
     fi
 
-    docker rm -f omni-integration vault-dev
+    docker rm -f omni vault-dev
   fi
 
   rm -rf _out/omni/
@@ -130,6 +130,7 @@ docker run -it -d --network host -v ./hack/certs:/certs \
     --cert /certs/localhost.pem \
     --etcd-embedded-unsafe-fsync=true \
     --create-initial-service-account \
+    --sqlite-storage-path db.sql \
     --initial-service-account-key-path=/_out/key \
     "${REGISTRY_MIRROR_FLAGS[@]}"
 
