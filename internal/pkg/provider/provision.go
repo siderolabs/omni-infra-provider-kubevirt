@@ -10,6 +10,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"maps"
 	"net/url"
 	"time"
 
@@ -295,6 +296,14 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 
 			vm.Spec.DataVolumeTemplates = []kvv1.DataVolumeTemplateSpec{
 				volumeTemplate,
+			}
+
+			// Apply user-provided labels to the launcher pod
+			if len(data.VMLabels) > 0 {
+				if vm.Spec.Template.ObjectMeta.Labels == nil {
+					vm.Spec.Template.ObjectMeta.Labels = map[string]string{}
+				}
+				maps.Copy(vm.Spec.Template.ObjectMeta.Labels, data.VMLabels)
 			}
 
 			if vm.Name == "" {

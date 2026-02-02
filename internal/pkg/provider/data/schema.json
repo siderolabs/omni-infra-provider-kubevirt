@@ -20,6 +20,13 @@
     "network_binding": {
       "enum": ["bridge", "passt"],
       "default": "bridge"
+    },
+    "vm_labels": {
+      "type": "object",
+      "description": "Custom labels to apply to the VirtualMachine resource",
+      "additionalProperties": {
+        "type": "string"
+      }
     }
   },
   "required": [
