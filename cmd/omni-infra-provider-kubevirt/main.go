@@ -9,6 +9,7 @@ import (
 	"context"
 	_ "embed"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -34,6 +35,8 @@ import (
 	"github.com/siderolabs/omni-infra-provider-kubevirt/internal/pkg/provider/data"
 	"github.com/siderolabs/omni-infra-provider-kubevirt/internal/pkg/provider/meta"
 )
+
+const DefaultKubeconfig = "~/.kube/config"
 
 //go:embed data/icon.svg
 var icon []byte
@@ -69,12 +72,26 @@ var rootCmd = &cobra.Command{
 		}
 
 		var config *rest.Config
-		if cfg.inClusterConfig {
+		attemptInClusterConfig := false
+
+		// check if kubeconfig exists
+		if _, err = os.Stat(cfg.kubeconfigFile); errors.Is(err, os.ErrNotExist) {
+			// if the value is the default, then the flag was not explicitly set
+			// so we fall back to attempting the in-cluster client
+			if cfg.kubeconfigFile == DefaultKubeconfig {
+				logger.Info("--kubeconfig-file not set, falling back to in-cluster kubeconfig", zap.Error(err))
+				attemptInClusterConfig = true
+			}
+		}
+
+		if attemptInClusterConfig {
+			// attempt to use the in-cluster client
 			config, err = rest.InClusterConfig()
 			if err != nil {
 				return fmt.Errorf("failed to read in-cluster Kubernetes config: %w", err)
 			}
 		} else {
+			// kubeconfig exists so we can use it to create the client
 			config, err = clientcmd.BuildConfigFromFlags("", cfg.kubeconfigFile)
 			if err != nil {
 				return fmt.Errorf("failed to read Kubernetes config: %w", err)
@@ -134,7 +151,6 @@ var cfg struct {
 	serviceAccountKey   string
 	providerName        string
 	providerDescription string
-	inClusterConfig     bool
 	kubeconfigFile      string
 	namespace           string
 	dataVolumeMode      string
@@ -161,8 +177,7 @@ func init() {
 	rootCmd.Flags().StringVar(&cfg.serviceAccountKey, "omni-service-account-key", os.Getenv("OMNI_SERVICE_ACCOUNT_KEY"), "Omni service account key, if not set, defaults to OMNI_SERVICE_ACCOUNT_KEY.")
 	rootCmd.Flags().StringVar(&cfg.providerName, "provider-name", "KubeVirt", "provider name as it appears in Omni")
 	rootCmd.Flags().StringVar(&cfg.providerDescription, "provider-description", "KubeVirt infrastructure provider", "Provider description as it appears in Omni")
-	rootCmd.Flags().BoolVar(&cfg.inClusterConfig, "in-cluster-config", false, "Use an in-cluster kubernetes client rather than a kubeconfig file. Useful if the provider is running in the same cluster as Kubevirt.")
-	rootCmd.Flags().StringVar(&cfg.kubeconfigFile, "kubeconfig-file", "~/.kube/config", "Kubeconfig file to use to connect to the cluster where KubeVirt is running")
+	rootCmd.Flags().StringVar(&cfg.kubeconfigFile, "kubeconfig-file", DefaultKubeconfig, "Kubeconfig file to use to connect to the cluster where KubeVirt is running")
 	rootCmd.Flags().StringVar(&cfg.namespace, "namespace", "default", "Kubernetes namespace to use for the resources created by the provider")
 	rootCmd.Flags().StringVar(&cfg.dataVolumeMode, "data-volume-mode", "", "DataVolume PVC type to use (Block|Filesystem)")
 	rootCmd.Flags().BoolVar(&cfg.insecureSkipVerify, "insecure-skip-verify", false, "ignores untrusted certs on Omni side")
