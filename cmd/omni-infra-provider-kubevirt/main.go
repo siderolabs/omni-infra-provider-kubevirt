@@ -72,29 +72,19 @@ var rootCmd = &cobra.Command{
 		}
 
 		var config *rest.Config
-		attemptInClusterConfig := false
+		kubeconfigFile := getKubeconfigFile()
 
-		// check if kubeconfig exists
-		if _, err = os.Stat(cfg.kubeconfigFile); errors.Is(err, os.ErrNotExist) {
-			// if the value is the default, then the flag was not explicitly set
-			// so we fall back to attempting the in-cluster client
-			if cfg.kubeconfigFile == DefaultKubeconfig {
-				logger.Info("--kubeconfig-file not set, falling back to in-cluster kubeconfig", zap.Error(err))
-				attemptInClusterConfig = true
-			}
-		}
-
-		if attemptInClusterConfig {
-			// attempt to use the in-cluster client
-			config, err = rest.InClusterConfig()
-			if err != nil {
-				return fmt.Errorf("failed to read in-cluster Kubernetes config: %w", err)
-			}
-		} else {
-			// kubeconfig exists so we can use it to create the client
+		if kubeconfigFile != "" {
 			config, err = clientcmd.BuildConfigFromFlags("", cfg.kubeconfigFile)
 			if err != nil {
 				return fmt.Errorf("failed to read Kubernetes config: %w", err)
+			}
+		} else {
+			logger.Info("--kubeconfig-file not set and default file not found, falling back to in-cluster kubeconfig")
+
+			config, err = rest.InClusterConfig()
+			if err != nil {
+				return fmt.Errorf("failed to read in-cluster Kubernetes config: %w", err)
 			}
 		}
 
@@ -161,6 +151,16 @@ func main() {
 	if err := app(); err != nil {
 		os.Exit(1)
 	}
+}
+
+func getKubeconfigFile() string {
+	if cfg.kubeconfigFile == DefaultKubeconfig {
+		if _, err := os.Stat(cfg.kubeconfigFile); errors.Is(err, os.ErrNotExist) {
+			return ""
+		}
+	}
+
+	return cfg.kubeconfigFile
 }
 
 func app() error {
