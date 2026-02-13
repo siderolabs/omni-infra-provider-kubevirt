@@ -18,7 +18,9 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/siderolabs/omni/client/pkg/client"
+	"github.com/siderolabs/omni/client/pkg/constants"
 	"github.com/siderolabs/omni/client/pkg/infra"
+	factory "github.com/siderolabs/omni/client/pkg/infra/imagefactory"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -108,7 +110,7 @@ var rootCmd = &cobra.Command{
 			return fmt.Errorf("data-volume-mode flags should be one of %s", volumeOpts)
 		}
 
-		provisioner := provider.NewProvisioner(k8sClient, cfg.namespace, cfg.dataVolumeMode)
+		provisioner := provider.NewProvisioner(k8sClient, cfg.imageFactoryBaseURL, cfg.namespace, cfg.dataVolumeMode)
 
 		ip, err := infra.NewProvider(meta.ProviderID, provisioner, infra.ProviderConfig{
 			Name:        cfg.providerName,
@@ -130,14 +132,27 @@ var rootCmd = &cobra.Command{
 			clientOptions = append(clientOptions, client.WithServiceAccount(cfg.serviceAccountKey))
 		}
 
-		return ip.Run(cmd.Context(), logger, infra.WithOmniEndpoint(cfg.omniAPIEndpoint), infra.WithClientOptions(
-			clientOptions...,
-		), infra.WithEncodeRequestIDsIntoTokens())
+		factoryClient, err := factory.NewClient(factory.ClientOptions{
+			FactoryEndpoint: cfg.imageFactoryBaseURL,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to create factory client: %w", err)
+		}
+
+		return ip.Run(
+			cmd.Context(),
+			logger,
+			infra.WithOmniEndpoint(cfg.omniAPIEndpoint),
+			infra.WithImageFactoryClient(factoryClient),
+			infra.WithClientOptions(clientOptions...),
+			infra.WithEncodeRequestIDsIntoTokens(),
+		)
 	},
 }
 
 var cfg struct {
 	omniAPIEndpoint     string
+	imageFactoryBaseURL string
 	serviceAccountKey   string
 	providerName        string
 	providerDescription string
@@ -171,8 +186,8 @@ func app() error {
 }
 
 func init() {
-	rootCmd.Flags().StringVar(&cfg.omniAPIEndpoint, "omni-api-endpoint", os.Getenv("OMNI_ENDPOINT"),
-		"the endpoint of the Omni API, if not set, defaults to OMNI_ENDPOINT env var.")
+	rootCmd.Flags().StringVar(&cfg.omniAPIEndpoint, "omni-api-endpoint", os.Getenv("OMNI_ENDPOINT"), "the endpoint of the Omni API, if not set, defaults to OMNI_ENDPOINT env var.")
+	rootCmd.Flags().StringVar(&cfg.imageFactoryBaseURL, "image-factory-base-url", constants.ImageFactoryBaseURL, "The base URL of the image factory.")
 	rootCmd.Flags().StringVar(&meta.ProviderID, "id", meta.ProviderID, "the id of the infra provider, it is used to match the resources with the infra provider label.")
 	rootCmd.Flags().StringVar(&cfg.serviceAccountKey, "omni-service-account-key", os.Getenv("OMNI_SERVICE_ACCOUNT_KEY"), "Omni service account key, if not set, defaults to OMNI_SERVICE_ACCOUNT_KEY.")
 	rootCmd.Flags().StringVar(&cfg.providerName, "provider-name", "KubeVirt", "provider name as it appears in Omni")
