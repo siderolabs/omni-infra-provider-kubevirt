@@ -132,6 +132,8 @@ docker run -it -d --network host -v ./hack/certs:/certs \
     --create-initial-service-account \
     --sqlite-storage-path db.sql \
     --initial-service-account-key-path=/_out/key \
+    --eula-accept-email test-user@siderolabs.com \
+    --eula-accept-name "Test User" \
     "${REGISTRY_MIRROR_FLAGS[@]}"
 
 docker logs -f omni &> ${TMP}/omni.log &

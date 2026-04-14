@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	pointer "github.com/siderolabs/go-pointer"
 	"github.com/siderolabs/omni/client/pkg/constants"
 	"github.com/siderolabs/omni/client/pkg/infra/provision"
 	"github.com/siderolabs/omni/client/pkg/omni/resources/infra"
@@ -195,7 +194,7 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 				return err
 			}
 
-			vm.Spec.Running = pointer.To(true)
+			vm.Spec.Running = new(true)
 
 			if vm.Spec.Template == nil {
 				vm.Spec.Template = &kvv1.VirtualMachineInstanceTemplateSpec{
@@ -238,7 +237,7 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 				Disks: []kvv1.Disk{
 					{
 						Name:      "kv",
-						BootOrder: pointer.To(uint(1)),
+						BootOrder: new(uint(1)),
 						DiskDevice: kvv1.DiskDevice{
 							Disk: &kvv1.DiskTarget{
 								Bus: kvv1.DiskBusVirtio,

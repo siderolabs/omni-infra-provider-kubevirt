@@ -72,6 +72,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		var config *rest.Config
+
 		kubeconfigFile := getKubeconfigFile()
 
 		if kubeconfigFile != "" {
