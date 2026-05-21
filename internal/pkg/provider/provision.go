@@ -62,7 +62,8 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 			return nil
 		}),
 		provision.NewStep("createSchematic", func(ctx context.Context, logger *zap.Logger, pctx provision.Context[*resources.Machine]) error {
-			schematic, err := pctx.GenerateSchematicID(ctx, logger,
+			schematic, err := pctx.GenerateSchematicID(
+				ctx, logger,
 				provision.WithExtraKernelArgs("console=ttyS0,38400n8"),
 				provision.WithoutConnectionParams(),
 			)
@@ -89,7 +90,8 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 				return err
 			}
 
-			url = url.JoinPath("image",
+			url = url.JoinPath(
+				"image",
 				pctx.State.TypedSpec().Value.Schematic,
 				pctx.GetTalosVersion(),
 				fmt.Sprintf("nocloud-%s.qcow2", data.Architecture),
