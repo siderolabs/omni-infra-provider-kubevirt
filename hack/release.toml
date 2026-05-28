@@ -1,11 +1,6 @@
 # commit to be tagged for the new release
 commit = "HEAD"
 
-project_name = ""
-github_repo = "/"
-match_deps = "^github.com/(/[a-zA-Z0-9-]+)$"
-
-# previous = -
-# pre_release = true
-
-# [notes]
+project_name = "Omni KubeVirt Infra Provider"
+github_repo = "siderolabs/omni-infra-provider-kubevirt"
+match_deps = "^github.com/((talos-systems|siderolabs)/[a-zA-Z0-9-]+)$"
