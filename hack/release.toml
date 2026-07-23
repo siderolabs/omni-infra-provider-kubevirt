@@ -1,6 +1,15 @@
 # commit to be tagged for the new release
 commit = "HEAD"
 
-project_name = "Omni KubeVirt Infra Provider"
+project_name = "Omni Infra Provider KubeVirt"
 github_repo = "siderolabs/omni-infra-provider-kubevirt"
-match_deps = "^github.com/((talos-systems|siderolabs)/[a-zA-Z0-9-]+)$"
+match_deps = "^github.com/(siderolabs/[a-zA-Z0-9-]+)$"
+
+previous = "v0.1.0"
+pre_release = false
+
+[notes.versioning-support]
+title = "Add Versioning Support"
+description = """\
+The infra provider will now report its version to Omni.
+"""

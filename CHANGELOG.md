@@ -1,3 +1,39 @@
+## [Omni Infra Provider KubeVirt 0.2.0](https://github.com/siderolabs/omni-infra-provider-kubevirt/releases/tag/v0.2.0) (2026-07-23)
+
+Welcome to the v0.2.0 release of Omni Infra Provider KubeVirt!
+
+
+
+Please try out the release binaries and report any issues at
+https://github.com/siderolabs/omni-infra-provider-kubevirt/issues.
+
+### Add Versioning Support
+
+The infra provider will now report its version to Omni.
+
+
+### Contributors
+
+* Edward Sammut Alessi
+
+### Changes
+<details><summary>1 commit</summary>
+<p>
+
+* [`7081602`](https://github.com/siderolabs/omni-infra-provider-kubevirt/commit/70816020eb82f8036183999968e2c0390270c2dc) feat: rekres and add versioning
+</p>
+</details>
+
+### Dependency Changes
+
+* **github.com/cosi-project/runtime**    v1.16.1 -> v1.16.2
+* **github.com/siderolabs/omni/client**  v1.8.0 -> 582730ce940c
+* **k8s.io/api**                         v0.36.1 -> v0.36.3
+* **k8s.io/apimachinery**                v0.36.1 -> v0.36.3
+* **k8s.io/client-go**                   v0.36.1 -> v0.36.3
+
+Previous release can be found at [v0.1.0](https://github.com/siderolabs/omni-infra-provider-kubevirt/releases/tag/v0.1.0)
+
 ## [Omni KubeVirt Infra Provider 0.1.0](https://github.com/siderolabs/omni-infra-provider-kubevirt/releases/tag/v0.1.0) (2026-05-28)
 
 Welcome to the v0.1.0 release of Omni KubeVirt Infra Provider!
