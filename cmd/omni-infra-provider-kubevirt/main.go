@@ -34,6 +34,7 @@ import (
 	"github.com/siderolabs/omni-infra-provider-kubevirt/internal/pkg/provider"
 	"github.com/siderolabs/omni-infra-provider-kubevirt/internal/pkg/provider/data"
 	"github.com/siderolabs/omni-infra-provider-kubevirt/internal/pkg/provider/meta"
+	"github.com/siderolabs/omni-infra-provider-kubevirt/internal/version"
 )
 
 const DefaultKubeconfig = "~/.kube/config"
@@ -46,6 +47,7 @@ var rootCmd = &cobra.Command{
 	Use:          "provider",
 	Short:        "KubeVirt Omni infrastructure provider",
 	Long:         `Connects to Omni as an infra provider and manages VMs in KubeVirt`,
+	Version:      version.Tag,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, _ []string) error {
 		loggerConfig := zap.NewProductionConfig()
@@ -133,7 +135,7 @@ var rootCmd = &cobra.Command{
 
 		return ip.Run(cmd.Context(), logger, infra.WithOmniEndpoint(cfg.omniAPIEndpoint), infra.WithClientOptions(
 			clientOptions...,
-		), infra.WithEncodeRequestIDsIntoTokens())
+		), infra.WithEncodeRequestIDsIntoTokens(), infra.WithVersion(version.Tag))
 	},
 }
 

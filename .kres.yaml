@@ -11,6 +11,7 @@ spec:
 ---
 kind: golang.Generate
 spec:
+  versionPackagePath: internal/version
   baseSpecPath: /api
   vtProtobufEnabled: true
   specs:
