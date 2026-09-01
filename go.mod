@@ -7,7 +7,7 @@ require (
 	github.com/go-logr/logr v1.4.4
 	github.com/google/uuid v1.6.0
 	github.com/planetscale/vtprotobuf v0.6.1-0.20260702190614-8ae5a48058df
-	github.com/siderolabs/omni/client v1.10.0-beta.0.0.20260831181134-e460ae71eaae
+	github.com/siderolabs/omni/client v1.10.5
 	github.com/spf13/cobra v1.10.2
 	go.uber.org/zap v1.28.0
 	google.golang.org/protobuf v1.36.12
