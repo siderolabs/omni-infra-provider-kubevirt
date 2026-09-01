@@ -7,7 +7,7 @@ Can be used to automatically provision Talos nodes in a KubeVirt cluster.
 First you need to create a service account for the infrastructure provider.
 
 ```bash
-$ omnictl serviceaccount create --role=InfraProvider --use-user-role=false infra-provider:kubevirt
+$ omnictl infraprovider create kubevirt
 
 Set the following environment variables to use the service account:
 OMNI_ENDPOINT=https://<account-name>.omni.siderolabs.io/
@@ -18,6 +18,9 @@ Note: Store the service account key securely, it will not be displayed again
 
 Create a service account kubeconfig for your KubeVirt cluster.
 Store it in `kubeconfig` file.
+
+If your Omni is configured with an authenticated image factory, the service account also needs `create` and `update` on `secrets` in the provider's namespace.
+CDI's importer pod is what downloads the boot image, so the credentials have to be handed to it in a secret rather than kept in the provider.
 
 If you are using `--data-volume-mode=Filesystem` (which is the default), make sure to enable the `ExpandDisks` featuregate in KubeVirt, e.g.:
 

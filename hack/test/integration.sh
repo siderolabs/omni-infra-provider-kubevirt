@@ -31,7 +31,7 @@ TALOSCTL="${ARTIFACTS}/talosctl"
 KUBECTL="${TMP}/kubectl"
 OMNICTL="${TMP}/omnictl"
 
-curl -Lo ${OMNICTL} $(curl https://api.github.com/repos/siderolabs/omni/releases/latest  |  jq -r '.assets[] | select(.name | contains ("omnictl-linux-amd64")) | .browser_download_url')
+curl -Lo ${OMNICTL} $(curl https://api.github.com/repos/siderolabs/omni/releases | jq -r '[.[] | select(.draft == false)][0].assets[] | select(.name | contains ("omnictl-linux-amd64")) | .browser_download_url')
 chmod +x ${OMNICTL}
 
 curl -Lo ${KUBECTL} "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/${PLATFORM}/amd64/kubectl"

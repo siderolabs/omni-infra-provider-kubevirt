@@ -12,11 +12,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
-	"net/url"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/siderolabs/omni/client/pkg/constants"
+	"github.com/siderolabs/omni/client/pkg/imagefactory"
 	"github.com/siderolabs/omni/client/pkg/infra/provision"
 	"github.com/siderolabs/omni/client/pkg/omni/resources/infra"
 	"go.uber.org/zap"
@@ -49,6 +50,48 @@ func NewProvisioner(k8sClient client.Client, namespace, volumeMode string) *Prov
 	}
 }
 
+// ensureFactorySecret creates or updates the secret CDI reads the image factory headers from, and
+// returns its name.
+//
+// It is keyed by the factory host rather than by machine so that rotated credentials reach every
+// DataVolume that already references it, including the ones whose import has not started yet.
+func (p *Provisioner) ensureFactorySecret(ctx context.Context, factoryHost string, headers http.Header) (string, error) {
+	digest := sha256.Sum256([]byte(factoryHost))
+	name := "omni-image-factory-" + hex.EncodeToString(digest[:])[:16]
+
+	// CDI reads each value of a secretExtraHeaders secret as one complete header line.
+	data := make(map[string][]byte, len(headers))
+
+	for header, values := range headers {
+		for i, value := range values {
+			data[fmt.Sprintf("%s-%d", strings.ToLower(header), i)] = []byte(header + ": " + value)
+		}
+	}
+
+	secret := &v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: p.namespace,
+		},
+		Data: data,
+	}
+
+	err := p.k8sClient.Create(ctx, secret)
+	if err == nil {
+		return name, nil
+	}
+
+	if !errors.IsAlreadyExists(err) {
+		return "", fmt.Errorf("failed to create the image factory secret: %w", err)
+	}
+
+	if err = p.k8sClient.Update(ctx, secret); err != nil {
+		return "", fmt.Errorf("failed to update the image factory secret: %w", err)
+	}
+
+	return name, nil
+}
+
 // ProvisionSteps implements infra.Provisioner.
 //
 //nolint:gocognit,gocyclo,cyclop,maintidx
@@ -61,58 +104,57 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 
 			return nil
 		}),
-		provision.NewStep("createSchematic", func(ctx context.Context, logger *zap.Logger, pctx provision.Context[*resources.Machine]) error {
-			schematic, err := pctx.GenerateSchematicID(
-				ctx, logger,
+		provision.NewStep("ensureVolume", func(ctx context.Context, logger *zap.Logger, pctx provision.Context[*resources.Machine]) error {
+			pctx.State.TypedSpec().Value.TalosVersion = pctx.GetTalosVersion()
+
+			var data data.Data
+
+			err := pctx.UnmarshalProviderData(&data)
+			if err != nil {
+				return err
+			}
+
+			media, err := pctx.EnsureInstallationMedia(
+				ctx, logger, provision.MediaSpec{
+					MediaSpec: imagefactory.MediaSpec{
+						Kind:         imagefactory.InstallationMediaKindDisk,
+						Platform:     "nocloud",
+						Architecture: data.Architecture,
+						Format:       "qcow2",
+					},
+					DownloadTokenTTL: time.Hour,
+				},
 				provision.WithExtraKernelArgs("console=ttyS0,38400n8"),
 				provision.WithoutConnectionParams(),
 			)
 			if err != nil {
-				return err
+				return provision.NewRetryErrorf(time.Second*10, "error resolving the boot asset: %w", err)
 			}
 
-			pctx.State.TypedSpec().Value.Schematic = schematic
+			pctx.State.TypedSpec().Value.Schematic = media.SchematicID
 
-			return nil
-		}),
-		provision.NewStep("ensureVolume", func(ctx context.Context, _ *zap.Logger, pctx provision.Context[*resources.Machine]) error {
-			pctx.State.TypedSpec().Value.TalosVersion = pctx.GetTalosVersion()
-
-			url, err := url.Parse(constants.ImageFactoryBaseURL)
-			if err != nil {
-				return err
-			}
-
-			var data data.Data
-
-			err = pctx.UnmarshalProviderData(&data)
-			if err != nil {
-				return err
-			}
-
-			url = url.JoinPath(
-				"image",
-				pctx.State.TypedSpec().Value.Schematic,
-				pctx.GetTalosVersion(),
-				fmt.Sprintf("nocloud-%s.qcow2", data.Architecture),
-			)
-
-			hash := sha256.New()
-
-			if _, err = hash.Write([]byte(url.String())); err != nil {
-				return err
-			}
-
-			volumeID := hex.EncodeToString(hash.Sum(nil))
+			// Omni derives the storage key from what decides the image's content, so the volume keeps its
+			// name across a credential rotation. The URL cannot serve as the name, since it may carry
+			// credentials and would rename the volume whenever they change.
+			volumeID := media.StorageKey
 
 			pctx.State.TypedSpec().Value.VolumeId = volumeID
+
+			source := &cdiv1.DataVolumeSourceHTTP{URL: media.URL}
+
+			if len(media.Headers) > 0 {
+				secretName, secretErr := p.ensureFactorySecret(ctx, media.ImageFactoryHost, media.Headers)
+				if secretErr != nil {
+					return secretErr
+				}
+
+				source.SecretExtraHeaders = []string{secretName}
+			}
 
 			volume := cdiv1.DataVolume{
 				Spec: cdiv1.DataVolumeSpec{
 					Source: &cdiv1.DataVolumeSource{
-						HTTP: &cdiv1.DataVolumeSourceHTTP{
-							URL: url.String(),
-						},
+						HTTP: source,
 					},
 					PVC: &v1.PersistentVolumeClaimSpec{
 						AccessModes: []v1.PersistentVolumeAccessMode{
