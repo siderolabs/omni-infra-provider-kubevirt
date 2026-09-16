@@ -1,3 +1,50 @@
+## [Omni Infra Provider KubeVirt 0.3.0](https://github.com/siderolabs/omni-infra-provider-kubevirt/releases/tag/v0.3.0) (2026-09-16)
+
+Welcome to the v0.3.0 release of Omni Infra Provider KubeVirt!
+
+
+
+Please try out the release binaries and report any issues at
+https://github.com/siderolabs/omni-infra-provider-kubevirt/issues.
+
+### Authenticated Image Factory Support
+
+Previously, the provider built the download URL of the boot image itself, using the public image factory.
+An Omni configured with an image factory that authenticates its downloads never got a usable boot image this way.
+
+The provider now asks Omni for the URL and for the headers which go with it. The headers are passed on to the importer which downloads the image.
+
+
+### Contributors
+
+* Utku Ozdemir
+* Oguz Kilcan
+
+### Changes
+<details><summary>3 commits</summary>
+<p>
+
+* [`a037ae6`](https://github.com/siderolabs/omni-infra-provider-kubevirt/commit/a037ae6543f8b1782816f82bdad1fb322fcd88da) test: run the integration tests against the enterprise image factory
+* [`125ad00`](https://github.com/siderolabs/omni-infra-provider-kubevirt/commit/125ad00915915bb23a7f1e1799c572d753d466bb) chore: rekres
+* [`6f582cc`](https://github.com/siderolabs/omni-infra-provider-kubevirt/commit/6f582cc51d621e3fa83bffa2a31b422df5005643) feat: support authenticated image factory downloads
+</p>
+</details>
+
+### Dependency Changes
+
+* **github.com/cosi-project/runtime**              v1.16.2 -> v1.16.3
+* **github.com/go-logr/logr**                      v1.4.3 -> v1.4.4
+* **github.com/planetscale/vtprotobuf**            ba97887b0a25 -> 8ae5a48058df
+* **github.com/siderolabs/omni/client**            582730ce940c -> e460ae71eaae
+* **google.golang.org/protobuf**                   f2248ac996af -> v1.36.12
+* **k8s.io/api**                                   v0.36.3 -> v0.37.0
+* **k8s.io/apimachinery**                          v0.36.3 -> v0.37.0
+* **k8s.io/client-go**                             v0.36.3 -> v0.37.0
+* **kubevirt.io/api**                              v1.8.2 -> v1.9.0
+* **kubevirt.io/containerized-data-importer-api**  v1.65.0 -> v1.66.0
+
+Previous release can be found at [v0.2.0](https://github.com/siderolabs/omni-infra-provider-kubevirt/releases/tag/v0.2.0)
+
 ## [Omni Infra Provider KubeVirt 0.2.0](https://github.com/siderolabs/omni-infra-provider-kubevirt/releases/tag/v0.2.0) (2026-07-23)
 
 Welcome to the v0.2.0 release of Omni Infra Provider KubeVirt!

@@ -5,11 +5,14 @@ project_name = "Omni Infra Provider KubeVirt"
 github_repo = "siderolabs/omni-infra-provider-kubevirt"
 match_deps = "^github.com/(siderolabs/[a-zA-Z0-9-]+)$"
 
-previous = "v0.1.0"
+previous = "v0.2.0"
 pre_release = false
 
-[notes.versioning-support]
-title = "Add Versioning Support"
+[notes.boot-image]
+title = "Authenticated Image Factory Support"
 description = """\
-The infra provider will now report its version to Omni.
+Previously, the provider built the download URL of the boot image itself, using the public image factory.
+An Omni configured with an image factory that authenticates its downloads never got a usable boot image this way.
+
+The provider now asks Omni for the URL and for the headers which go with it. The headers are passed on to the importer which downloads the image.
 """
