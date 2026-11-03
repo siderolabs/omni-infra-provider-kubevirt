@@ -24,7 +24,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	kvv1 "kubevirt.io/api/core/v1"
 	cdiv1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
@@ -69,11 +68,9 @@ func (p *Provisioner) ensureFactorySecret(ctx context.Context, factoryHost strin
 	}
 
 	secret := &v1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: p.namespace,
-		},
-		Data: data,
+		Name:      name,
+		Namespace: p.namespace,
+		Data:      data,
 	}
 
 	err := p.k8sClient.Create(ctx, secret)
@@ -116,12 +113,10 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 
 			media, err := pctx.EnsureInstallationMedia(
 				ctx, logger, provision.MediaSpec{
-					MediaSpec: imagefactory.MediaSpec{
-						Kind:         imagefactory.InstallationMediaKindDisk,
-						Platform:     "nocloud",
-						Architecture: data.Architecture,
-						Format:       "qcow2",
-					},
+					Kind:             imagefactory.InstallationMediaKindDisk,
+					Platform:         "nocloud",
+					Architecture:     data.Architecture,
+					Format:           "qcow2",
 					DownloadTokenTTL: time.Hour,
 				},
 				provision.WithExtraKernelArgs("console=ttyS0,38400n8"),
@@ -282,10 +277,8 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 					{
 						Name:      "kv",
 						BootOrder: new(uint(1)),
-						DiskDevice: kvv1.DiskDevice{
-							Disk: &kvv1.DiskTarget{
-								Bus: kvv1.DiskBusVirtio,
-							},
+						Disk: &kvv1.DiskTarget{
+							Bus: kvv1.DiskBusVirtio,
 						},
 					},
 				},
@@ -297,19 +290,15 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 			vm.Spec.Template.Spec.Volumes = []kvv1.Volume{
 				{
 					Name: "kv",
-					VolumeSource: kvv1.VolumeSource{
-						DataVolume: &kvv1.DataVolumeSource{
-							Name: pctx.GetRequestID(),
-						},
+					DataVolume: &kvv1.DataVolumeSource{
+						Name: pctx.GetRequestID(),
 					},
 				},
 				{
 					Name: "cloudinitdisk",
-					VolumeSource: kvv1.VolumeSource{
-						CloudInitNoCloud: &kvv1.CloudInitNoCloudSource{
-							UserData:    pctx.ConnectionParams.JoinConfig,
-							NetworkData: `version: 1`,
-						},
+					CloudInitNoCloud: &kvv1.CloudInitNoCloudSource{
+						UserData:    pctx.ConnectionParams.JoinConfig,
+						NetworkData: `version: 1`,
 					},
 				},
 			}
@@ -326,9 +315,7 @@ func (p *Provisioner) ProvisionSteps() []provision.Step[*resources.Machine] {
 			}
 
 			volumeTemplate := kvv1.DataVolumeTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: pctx.GetRequestID(),
-				},
+				Name: pctx.GetRequestID(),
 				Spec: cdiv1.DataVolumeSpec{
 					PVC: &v1.PersistentVolumeClaimSpec{
 						AccessModes: []v1.PersistentVolumeAccessMode{
@@ -407,10 +394,8 @@ func (p *Provisioner) Deprovision(ctx context.Context, logger *zap.Logger, _ *re
 	}
 
 	err = p.k8sClient.Delete(ctx, &kvv1.VirtualMachine{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      machineRequest.Metadata().ID(),
-			Namespace: p.namespace,
-		},
+		Name:      machineRequest.Metadata().ID(),
+		Namespace: p.namespace,
 	})
 	if err != nil && !errors.IsNotFound(err) {
 		return err
