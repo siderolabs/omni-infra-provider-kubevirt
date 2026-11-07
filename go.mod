@@ -3,7 +3,7 @@ module github.com/siderolabs/omni-infra-provider-kubevirt
 go 1.27.3
 
 require (
-	github.com/cosi-project/runtime v1.16.4
+	github.com/cosi-project/runtime v1.17.0
 	github.com/go-logr/logr v1.4.4
 	github.com/google/uuid v1.6.0
 	github.com/planetscale/vtprotobuf v0.6.1-0.20260702190614-8ae5a48058df
