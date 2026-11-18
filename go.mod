@@ -3,20 +3,20 @@ module github.com/siderolabs/omni-infra-provider-kubevirt
 go 1.27.3
 
 require (
-	github.com/cosi-project/runtime v1.16.4
+	github.com/cosi-project/runtime v1.17.1
 	github.com/go-logr/logr v1.4.4
 	github.com/google/uuid v1.6.0
 	github.com/planetscale/vtprotobuf v0.6.1-0.20260702190614-8ae5a48058df
-	github.com/siderolabs/omni/client v1.13.2
+	github.com/siderolabs/omni/client v1.13.3
 	github.com/spf13/cobra v1.10.2
 	go.uber.org/zap v1.28.0
 	google.golang.org/protobuf v1.36.12
 	k8s.io/api v0.37.2
 	k8s.io/apimachinery v0.37.2
 	k8s.io/client-go v0.37.2
-	kubevirt.io/api v1.9.1
+	kubevirt.io/api v1.10.0
 	kubevirt.io/containerized-data-importer-api v1.66.1
-	sigs.k8s.io/controller-runtime v0.25.2
+	sigs.k8s.io/controller-runtime v0.25.3
 )
 
 require (
